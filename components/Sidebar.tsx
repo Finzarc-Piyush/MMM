@@ -13,20 +13,18 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="bg-gray-900 text-white w-64 min-h-screen p-4">
+    <div className="bg-blue-200 text-white w-64 min-h-screen p-4">
       <h1 className="text-2xl font-bold mb-8">Sales Maximizer</h1>
       <nav>
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.name}>
-              <Link 
-                href={item.path}
+              <Link href={item.path}
                 className={`flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200 ${
                   router.pathname === item.path
                     ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800'
-                }`}
-              >
+                    : 'text-white hover:bg-white-700'
+                }`}>
                 <item.icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </Link>
