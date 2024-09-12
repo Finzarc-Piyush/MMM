@@ -5,7 +5,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    router.push('/analysis')
+    router.push('/overview')
   }, [router])
 
   return null
