@@ -1,221 +1,156 @@
-import { useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import Layout from '../components/layout'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Sidebar from '@/components/Sidebar'
-
-const priceElasticityData = [
-  { variable: 'Base Price', elasticity: -1.5 },
-  { variable: 'Promotional Price', elasticity: -2.0 },
-  { variable: 'Competitor Price', elasticity: 0.5 },
-  { variable: 'Price Gap', elasticity: -0.8 },
-]
-
-const placeElasticityData = [
-  { variable: 'Distribution', elasticity: 0.8 },
-  { variable: 'Shelf Space', elasticity: 0.6 },
-  { variable: 'Store Type', elasticity: 0.4 },
-  { variable: 'Geographic Location', elasticity: 0.3 },
-]
-
-const productElasticityData = [
-  { variable: 'Quality', elasticity: 0.7 },
-  { variable: 'Packaging', elasticity: 0.4 },
-  { variable: 'Brand Equity', elasticity: 0.6 },
-  { variable: 'Product Mix', elasticity: 0.5 },
-]
-
-const promotionElasticityData = [
-  { variable: 'Trade Offers', elasticity: 0.5 },
-  { variable: 'Consumer Offers', elasticity: 0.3 },
-  { variable: 'Advertising', elasticity: 0.2 },
-  { variable: 'In-Store Promotions', elasticity: 0.4 },
-]
-
-const priceImpactData = [
-  { variable: 'Base Price', directImpact: 50, indirectImpact: 10 },
-  { variable: 'Promotional Price', directImpact: 30, indirectImpact: 15 },
-  { variable: 'Competitor Price', directImpact: 20, indirectImpact: 25 },
-  { variable: 'Price Gap', directImpact: 25, indirectImpact: 20 },
-]
-
-const placeImpactData = [
-  { variable: 'Distribution', directImpact: 40, indirectImpact: 20 },
-  { variable: 'Shelf Space', directImpact: 30, indirectImpact: 15 },
-  { variable: 'Store Type', directImpact: 25, indirectImpact: 10 },
-  { variable: 'Geographic Location', directImpact: 20, indirectImpact: 25 },
-]
-
-const productImpactData = [
-  { variable: 'Quality', directImpact: 35, indirectImpact: 25 },
-  { variable: 'Packaging', directImpact: 20, indirectImpact: 15 },
-  { variable: 'Brand Equity', directImpact: 30, indirectImpact: 30 },
-  { variable: 'Product Mix', directImpact: 25, indirectImpact: 20 },
-]
-
-const promotionImpactData = [
-  { variable: 'Trade Offers', directImpact: 30, indirectImpact: 15 },
-  { variable: 'Consumer Offers', directImpact: 25, indirectImpact: 10 },
-  { variable: 'Advertising', directImpact: 20, indirectImpact: 30 },
-  { variable: 'In-Store Promotions', directImpact: 35, indirectImpact: 20 },
-]
+import { useState, useEffect } from 'react';
+import Layout from '../components/layout';
+import Sidebar from '@/components/Sidebar';
+import { useRouter } from 'next/router';
+import { useFilter } from '../context/FilterContext';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 
 export default function ModelResults() {
-  const [selectedP, setSelectedP] = useState<string | null>(null)
+  const router = useRouter();
+  const { selectedBrand, setSelectedBrand, selectedGeography, setSelectedGeography, selectedPackRange, setSelectedPackRange } = useFilter();
+  const [selectedP, setSelectedP] = useState<string | null>(null);
+  const [tableData, setTableData] = useState<any[][]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const renderChart = (title: string, data: any[], dataKey: string) => (
-    <Card className="w-full mb-4">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="variable" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey={dataKey} fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  )
-
-  const renderImpactChart = (title: string, data: any[]) => (
-    <Card className="w-full mb-4">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="variable" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="directImpact" fill="#8884d8" />
-            <Bar dataKey="indirectImpact" fill="#82ca9d" />
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  )
-
-  const renderPriceCharts = () => (
-    <>
-      {renderChart('Price Elasticities', priceElasticityData, 'elasticity')}
-      {renderImpactChart('Price Impact on Revenue', priceImpactData)}
-    </>
-  )
-
-  const renderPlaceCharts = () => (
-    <>
-      {renderChart('Place Elasticities', placeElasticityData, 'elasticity')}
-      {renderImpactChart('Place Impact on Revenue', placeImpactData)}
-    </>
-  )
-
-  const renderProductCharts = () => (
-    <>
-      {renderChart('Product Elasticities', productElasticityData, 'elasticity')}
-      {renderImpactChart('Product Impact on Revenue', productImpactData)}
-    </>
-  )
-
-  const renderPromotionCharts = () => (
-    <>
-      {renderChart('Promotion Elasticities', promotionElasticityData, 'elasticity')}
-      {renderImpactChart('Promotion Impact on Revenue', promotionImpactData)}
-    </>
-  )
-
-  const renderCharts = () => {
-    switch (selectedP) {
-      case 'Price':
-        return renderPriceCharts()
-      case 'Place':
-        return renderPlaceCharts()
-      case 'Product':
-        return renderProductCharts()
-      case 'Promotion':
-        return renderPromotionCharts()
-      default:
-        return (
-          <>
-            <h3 className="text-xl font-bold mt-4 mb-2">Price</h3>
-            {renderPriceCharts()}
-            <h3 className="text-xl font-bold mt-4 mb-2">Place</h3>
-            {renderPlaceCharts()}
-            <h3 className="text-xl font-bold mt-4 mb-2">Product</h3>
-            {renderProductCharts()}
-            <h3 className="text-xl font-bold mt-4 mb-2">Promotion</h3>
-            {renderPromotionCharts()}
-          </>
-        )
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'brand') {
+      router.push('/login');
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('selectedBrand', selectedBrand);
+      sessionStorage.setItem('selectedGeography', selectedGeography);
+      sessionStorage.setItem('selectedPackRange', selectedPackRange);
+    }
+  }, [selectedBrand, selectedGeography, selectedPackRange]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/elasticity-data');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = await response.json();
+        setTableData(data);
+      } catch (error) {
+        setError('Failed to load data from Excel file.');
+      }
+    };
+    fetchData();
+  }, []);
+
+  const brands = ['All', 'Saffola', 'NSA', 'Livon'];
+  const geographies = ['All', 'NSA Stronghold', 'DA Stronghold', 'Uncontested'];
+  const packRanges = ['All', '0-40 ml', '41-89 ml', '90-299 ml', 'Large Packs'];
 
   return (
     <Layout>
-      <div className="flex">
+      <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 p-8">
+        <div className="flex-1 flex flex-col p-8 max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold mb-6">Model Results & Recommendations</h2>
           <div className="flex space-x-4 mb-8">
-            <Button
-              variant={selectedP === null ? 'default' : 'outline'}
-              onClick={() => setSelectedP(null)}
-            >
-              All
-            </Button>
-            <Button
-              variant={selectedP === 'Price' ? 'default' : 'outline'}
-              onClick={() => setSelectedP('Price')}
-            >
-              Price
-            </Button>
-            <Button
-              variant={selectedP === 'Place' ? 'default' : 'outline'}
-              onClick={() => setSelectedP('Place')}
-            >
-              Place
-            </Button>
-            <Button
-              variant={selectedP === 'Product' ? 'default' : 'outline'}
-              onClick={() => setSelectedP('Product')}
-            >
-              Product
-            </Button>
-            <Button
-              variant={selectedP === 'Promotion' ? 'default' : 'outline'}
-              onClick={() => setSelectedP('Promotion')}
-            >
-              Promotion
-            </Button>
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Brand</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedBrand}
+                onChange={(e) => {
+                  setSelectedBrand(e.target.value);
+                  sessionStorage.setItem('selectedBrand', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Brand</option>
+                {brands?.map((brand: string) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Geography</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedGeography}
+                onChange={(e) => {
+                  setSelectedGeography(e.target.value);
+                  sessionStorage.setItem('selectedGeography', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Geography</option>
+                {geographies.map((geo) => (
+                  <option key={geo} value={geo}>{geo}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Pack Range</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedPackRange}
+                onChange={(e) => {
+                  setSelectedPackRange(e.target.value);
+                  sessionStorage.setItem('selectedPackRange', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Pack Range</option>
+                {packRanges.map((range) => (
+                  <option key={range} value={range}>{range}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="overflow-y-auto">
-            {renderCharts()}
+          <div className="border-t border-gray-200 mt-4 pt-4">
+            <div className="flex-1 overflow-y-auto mb-8">
+              {error ? (
+                <div className="text-red-500">{error}</div>
+              ) : (
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr>
+                      {tableData[0]?.map((header, index) => (
+                        <th key={index} className="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.slice(1).map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="py-2 px-4 border-b border-gray-200 text-sm">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside">
-                <li>Consider a slight price decrease to boost sales volume.</li>
-                <li>Focus on increasing distribution as it has a significant positive impact on revenue.</li>
-                <li>Optimize trade offers for better ROI.</li>
-                <li>Maintain current levels of consumer offers and advertising.</li>
-                <li>Improve product quality and packaging to increase brand equity.</li>
-              </ul>
-            </CardContent>
-          </Card>
+          <div className="fixed bottom-0 left-64 right-0 bg-white p-4 shadow-lg">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md text-indigo-600">Recommendations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside text-sm">
+                  <li>Consider a slight price decrease to boost sales volume.</li>
+                  <li>Focus on increasing distribution as it has a significant positive impact on revenue.</li>
+                  <li>Optimize trade offers for better ROI.</li>
+                  <li>Maintain current levels of consumer offers and advertising.</li>
+                  <li>Improve product quality and packaging to increase brand equity.</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>
-  )
+  );
 }

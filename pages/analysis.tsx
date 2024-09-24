@@ -1,225 +1,332 @@
-import { useState } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import Layout from '../components/layout'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Sidebar from '@/components/Sidebar'
+import { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Layout from '../components/layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Sidebar from '@/components/Sidebar';
+import { useRouter } from 'next/router';
+import { useFilter } from '../context/FilterContext';
 
-// Mock data for each P
-const priceData = [
-  { month: 'Jan', price: 200, competitorPrice1: 210, competitorPrice2: 195 },
-  { month: 'Feb', price: 210, competitorPrice1: 215, competitorPrice2: 200 },
-  { month: 'Mar', price: 190, competitorPrice1: 200, competitorPrice2: 185 },
-  { month: 'Apr', price: 200, competitorPrice1: 205, competitorPrice2: 190 },
-  { month: 'May', price: 218, competitorPrice1: 220, competitorPrice2: 210 },
-  { month: 'Jun', price: 205, competitorPrice1: 210, competitorPrice2: 200 },
-]
-
-const placeData = [
-  { month: 'Jan', distribution: 80, marketShare: 30, storeCount: 1000 },
-  { month: 'Feb', distribution: 82, marketShare: 31, storeCount: 1050 },
-  { month: 'Mar', distribution: 85, marketShare: 33, storeCount: 1100 },
-  { month: 'Apr', distribution: 83, marketShare: 32, storeCount: 1080 },
-  { month: 'May', distribution: 86, marketShare: 34, storeCount: 1150 },
-  { month: 'Jun', distribution: 88, marketShare: 35, storeCount: 1200 },
-]
-
-const productData = [
-  { month: 'Jan', sales: 4000, productA: 2000, productB: 1500, productC: 500 },
-  { month: 'Feb', sales: 3000, productA: 1500, productB: 1000, productC: 500 },
-  { month: 'Mar', sales: 2000, productA: 1000, productB: 500, productC: 500 },
-  { month: 'Apr', sales: 2780, productA: 1280, productB: 1000, productC: 500 },
-  { month: 'May', sales: 1890, productA: 890, productB: 500, productC: 500 },
-  { month: 'Jun', sales: 2390, productA: 1390, productB: 500, productC: 500 },
-]
-
-const promotionData = [
-  { month: 'Jan', tradeOffers: 2400, consumerOffers: 2400, advertising: 1000, events: 500 },
-  { month: 'Feb', tradeOffers: 2210, consumerOffers: 2290, advertising: 1100, events: 600 },
-  { month: 'Mar', tradeOffers: 2290, consumerOffers: 2000, advertising: 1200, events: 700 },
-  { month: 'Apr', tradeOffers: 2000, consumerOffers: 2181, advertising: 1300, events: 800 },
-  { month: 'May', tradeOffers: 2181, consumerOffers: 2500, advertising: 1400, events: 900 },
-  { month: 'Jun', tradeOffers: 2500, consumerOffers: 2100, advertising: 1500, events: 1000 },
-]
+const brands = ['All', 'Saffola', 'NSA', 'Livon'];
+const geographies = ['All', 'NSA Stronghold', 'DA Stronghold', 'Uncontested'];
+const packRanges = ['All', '0-40 ml', '41-89 ml', '90-299 ml', 'Large Packs'];
 
 export default function Analysis() {
-  const [selectedP, setSelectedP] = useState<string | null>(null)
+  const [selectedP, setSelectedP] = useState<string | null>(null);
+  const { selectedBrand, setSelectedBrand, selectedGeography, setSelectedGeography, selectedPackRange, setSelectedPackRange } = useFilter();
+  const router = useRouter();
+  const [zoomedChart, setZoomedChart] = useState<React.ReactNode | null>(null);
+  const [data, setData] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then((response) => response.json())
+      .then((jsonData) => {
+        console.log('Fetched Data:', jsonData); // Log the fetched data
+        setData(jsonData);
+      })
+      .catch((error) => console.error('Error fetching data:', error));
+  }, []);
 
   const renderChart = (title: string, data: any[], lines: { key: string; color: string }[]) => (
-    <Card className="w-full mb-4">
+    <Card className="w-full mb-4 bg-white rounded-xl shadow-md cursor-pointer" onClick={() => handleChartClick(
+      <Card className="w-full h-full bg-white rounded-xl shadow-md">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis dataKey="month" stroke="#4F46E5" />
+              <YAxis yAxisId="left" stroke="#4F46E5" domain={[60, 'auto']} />
+              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+              <Tooltip contentStyle={{ background: 'white', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+              <Legend />
+              {lines.map((line) => (
+                <Line
+                  key={line.key}
+                  type="monotone"
+                  dataKey={line.key}
+                  stroke={line.color}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                  yAxisId={line.key === 'salesUnits' ? 'left' : 'right'}
+                  strokeDasharray={line.key === 'salesUnits' ? '0' : '3 3'}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    )}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis dataKey="month" stroke="#4F46E5" />
+            <YAxis yAxisId="left" stroke="#4F46E5" domain={[60, 'auto']} />
+            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+            <Tooltip contentStyle={{ background: 'white', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
             <Legend />
             {lines.map((line) => (
-              <Line key={line.key} type="monotone" dataKey={line.key} stroke={line.color} />
+              <Line
+                key={line.key}
+                type="monotone"
+                dataKey={line.key}
+                stroke={line.color}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+                yAxisId={line.key === 'salesUnits' ? 'left' : 'right'}
+                strokeDasharray={line.key === 'salesUnits' ? '0' : '3 3'}
+              />
             ))}
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderPriceCharts = () => (
     <>
-      {renderChart('Price Comparison', priceData, [
-        { key: 'price', color: '#8884d8' },
-        { key: 'competitorPrice1', color: '#82ca9d' },
-        { key: 'competitorPrice2', color: '#ffc658' },
+      {renderChart('RPI DA 10/- vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'rpiDA10', color: '#82ca9d' },
       ])}
-      {renderChart('Price Elasticity', priceData, [
-        { key: 'price', color: '#8884d8' },
-        { key: 'sales', color: '#82ca9d' },
-      ])}
-      {renderChart('Price vs Profit Margin', priceData, [
-        { key: 'price', color: '#8884d8' },
-        { key: 'profitMargin', color: '#82ca9d' },
-      ])}
-      {renderChart('Price Positioning', priceData, [
-        { key: 'price', color: '#8884d8' },
-        { key: 'premiumIndex', color: '#82ca9d' },
+      {renderChart('RPI DA 20/- vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'rpiDA20', color: '#82ca9d' },
       ])}
     </>
-  )
+  );
 
   const renderPlaceCharts = () => (
     <>
-      {renderChart('Distribution Coverage', placeData, [
-        { key: 'distribution', color: '#8884d8' },
+      {renderChart('WTD vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'wtdNSA', color: '#82ca9d' },
       ])}
-      {renderChart('Market Share', placeData, [
-        { key: 'marketShare', color: '#82ca9d' },
+      {renderChart('# Stores vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'storesNSA', color: '#82ca9d' },
       ])}
-      {renderChart('Store Count', placeData, [
-        { key: 'storeCount', color: '#ffc658' },
+      {renderChart('WTD NSA vs WTD DA', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'wtdNSA', color: '#8884d8' },
+        { key: 'wtdDA', color: '#82ca9d' },
       ])}
-      {renderChart('Channel Performance', placeData, [
-        { key: 'modernTrade', color: '#8884d8' },
-        { key: 'generalTrade', color: '#82ca9d' },
-        { key: 'ecommerce', color: '#ffc658' },
+      {renderChart('# Stores NSA vs # Stores DA', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'storesNSA', color: '#8884d8' },
+        { key: 'storesDA', color: '#82ca9d' },
       ])}
     </>
-  )
+  );
 
   const renderProductCharts = () => (
     <>
-      {renderChart('Product Sales', productData, [
-        { key: 'productA', color: '#8884d8' },
-        { key: 'productB', color: '#82ca9d' },
-        { key: 'productC', color: '#ffc658' },
+      {renderChart('34ml vs 30ml vs 29ml (Sales Units)', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'SalesUnits29ml', color: '#82ca9d' },
+        { key: 'SalesUnits30ml', color: '#ffc658' },
+        { key: 'SalesUnits34ml', color: '#ff7300' },
       ])}
-      {renderChart('Product Mix', productData, [
-        { key: 'productA', color: '#8884d8' },
-        { key: 'productB', color: '#82ca9d' },
-        { key: 'productC', color: '#ffc658' },
-      ])}
-      {renderChart('Product Lifecycle', productData, [
-        { key: 'productA', color: '#8884d8' },
-        { key: 'productB', color: '#82ca9d' },
-        { key: 'productC', color: '#ffc658' },
-      ])}
-      {renderChart('Product Profitability', productData, [
-        { key: 'productAProfit', color: '#8884d8' },
-        { key: 'productBProfit', color: '#82ca9d' },
-        { key: 'productCProfit', color: '#ffc658' },
+      {renderChart('34ml vs 30ml vs 29ml (WTD)', data, [
+        { key: 'wtdNSA', color: '#8884d8' },
+        { key: 'WTD29ml', color: '#82ca9d' },
+        { key: 'WTD30ml', color: '#ffc658' },
+        { key: 'WTD34ml', color: '#ff7300' },
       ])}
     </>
-  )
+  );
 
   const renderPromotionCharts = () => (
     <>
-      {renderChart('Trade Offers', promotionData, [
-        { key: 'tradeOffers', color: '#8884d8' },
+      {renderChart('TUP Scheme NSA vs TUP Scheme DA vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'tupSchemeNSA', color: '#82ca9d' },
+        { key: 'tupSchemeDA', color: '#ffc658' },
       ])}
-      {renderChart('Consumer Offers', promotionData, [
-        { key: 'consumerOffers', color: '#82ca9d' },
-      ])}
-      {renderChart('Advertising Spend', promotionData, [
-        { key: 'advertising', color: '#ffc658' },
-      ])}
-      {renderChart('Event Impact', promotionData, [
-        { key: 'events', color: '#8884d8' },
-        { key: 'eventROI', color: '#82ca9d' },
+      {renderChart('Value Promotion vs Volume Promotion vs Sales Units', data, [
+        { key: 'salesUnits', color: '#8884d8' },
+        { key: 'valuePromo', color: '#82ca9d' },
+        { key: 'volumePromo', color: '#ffc658' },
       ])}
     </>
-  )
+  );
 
   const renderCharts = () => {
+    if (data.length === 0) {
+      return <p>No data available. Please upload an Excel file.</p>;
+    }
+
     switch (selectedP) {
       case 'Price':
-        return renderPriceCharts()
+        return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPriceCharts()}</div>;
       case 'Place':
-        return renderPlaceCharts()
+        return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPlaceCharts()}</div>;
       case 'Product':
-        return renderProductCharts()
+        return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderProductCharts()}</div>;
       case 'Promotion':
-        return renderPromotionCharts()
+        return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPromotionCharts()}</div>;
       default:
         return (
           <>
             <h3 className="text-xl font-bold mt-4 mb-2">Price</h3>
-            {renderPriceCharts()}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPriceCharts()}</div>
             <h3 className="text-xl font-bold mt-4 mb-2">Place</h3>
-            {renderPlaceCharts()}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPlaceCharts()}</div>
             <h3 className="text-xl font-bold mt-4 mb-2">Product</h3>
-            {renderProductCharts()}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderProductCharts()}</div>
             <h3 className="text-xl font-bold mt-4 mb-2">Promotion</h3>
-            {renderPromotionCharts()}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{renderPromotionCharts()}</div>
           </>
-        )
+        );
     }
-  }
+  };
+
+  const handleChartClick = (chart: React.ReactNode) => {
+    setZoomedChart(chart);
+  };
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'brand') {
+      router.push('/login');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('selectedBrand', selectedBrand);
+      sessionStorage.setItem('selectedGeography', selectedGeography);
+      sessionStorage.setItem('selectedPackRange', selectedPackRange);
+    }
+  }, [selectedBrand, selectedGeography, selectedPackRange]);
 
   return (
     <Layout>
-      <div className="flex">
+      <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 p-8">
+        <div className="flex-1 flex flex-col p-8 max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold mb-6">Analysis</h2>
           <div className="flex space-x-4 mb-8">
-            <Button
-              variant={selectedP === null ? 'default' : 'outline'}
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Brand</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedBrand}
+                onChange={(e) => {
+                  setSelectedBrand(e.target.value);
+                  sessionStorage.setItem('selectedBrand', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Brand</option>
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Geography</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedGeography}
+                onChange={(e) => {
+                  setSelectedGeography(e.target.value);
+                  sessionStorage.setItem('selectedGeography', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Geography</option>
+                {geographies.map((geo) => (
+                  <option key={geo} value={geo}>{geo}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-600">Pack Range</h3>
+              <select
+                className="w-[180px] p-2 rounded-md border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={selectedPackRange}
+                onChange={(e) => {
+                  setSelectedPackRange(e.target.value);
+                  sessionStorage.setItem('selectedPackRange', e.target.value);
+                }}
+              >
+                <option value="" disabled>Select Pack Range</option>
+                {packRanges.map((range) => (
+                  <option key={range} value={range}>{range}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex space-x-2 mb-4">
+            <button
+              className={`px-4 py-2 rounded-md ${selectedP === null ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'}`}
               onClick={() => setSelectedP(null)}
             >
               All
-            </Button>
-            <Button
-              variant={selectedP === 'Price' ? 'default' : 'outline'}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${selectedP === 'Price' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'}`}
               onClick={() => setSelectedP('Price')}
             >
               Price
-            </Button>
-            <Button
-              variant={selectedP === 'Place' ? 'default' : 'outline'}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${selectedP === 'Place' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'}`}
               onClick={() => setSelectedP('Place')}
             >
               Place
-            </Button>
-            <Button
-              variant={selectedP === 'Product' ? 'default' : 'outline'}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${selectedP === 'Product' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'}`}
               onClick={() => setSelectedP('Product')}
             >
               Product
-            </Button>
-            <Button
-              variant={selectedP === 'Promotion' ? 'default' : 'outline'}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${selectedP === 'Promotion' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'}`}
               onClick={() => setSelectedP('Promotion')}
             >
               Promotion
-            </Button>
+            </button>
           </div>
-          <div className="overflow-y-auto">
-            {renderCharts()}
+          <div className="border-t border-gray-200 mt-4 pt-4">
+            <div className="flex-1 overflow-y-auto mb-8">
+              {renderCharts()}
+            </div>
+          </div>
+          {zoomedChart && (
+            <>
+              <div className="dimmed-background" onClick={() => setZoomedChart(null)}></div>
+              <div className="zoomed-chart">
+                {zoomedChart}
+              </div>
+            </>
+          )}
+          <div className="fixed bottom-0 left-64 right-0 bg-white p-4 shadow-lg">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md text-indigo-600">Recommendations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside text-sm">
+                  <li>Consider a slight price decrease to boost sales volume.</li>
+                  <li>Focus on increasing distribution as it has a significant positive impact on revenue.</li>
+                  <li>Optimize trade offers for better ROI.</li>
+                  <li>Maintain current levels of consumer offers and advertising.</li>
+                  <li>Improve product quality and packaging to increase brand equity.</li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     </Layout>
-  )
+  );
 }

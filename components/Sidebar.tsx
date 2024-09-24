@@ -21,7 +21,7 @@ const Sidebar = () => {
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Marico</h1>
-          <p className="text-sm text-gray-400">Marketing Dashboard</p>
+          <p className="text-sm text-gray-400">Brand Optix</p>
         </div>
       </div>
       <nav className="flex-grow">

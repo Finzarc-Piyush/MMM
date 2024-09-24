@@ -7,16 +7,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { DollarSign, Users, ShoppingCart, Search, TrendingUp, TrendingDown, Filter } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useFilter } from '../context/FilterContext';
-import { Modal } from '../components/Modal';
 
-const Dashboard: React.FC = () => {
+const DashboardDS: React.FC = () => {
   const router = useRouter();
   const { selectedBrand, setSelectedBrand, selectedGeography, setSelectedGeography, selectedPackRange, setSelectedPackRange } = useFilter();
-  const [zoomedContent, setZoomedContent] = useState<React.ReactNode | null>(null);
 
   useEffect(() => {
     const role = localStorage.getItem('userRole');
-    if (role !== 'brand') {
+    if (role !== 'ds') {
       router.push('/login');
     }
   }, [router]);
@@ -28,53 +26,57 @@ const Dashboard: React.FC = () => {
       sessionStorage.setItem('selectedPackRange', selectedPackRange);
     }
   }, [selectedBrand, selectedGeography, selectedPackRange]);
-
+  
+  // Sample data for the line chart
   const chartData = [
-    { date: '2022-01-01', sales: 400, wtd: 75 },
-    { date: '2022-02-01', sales: 300, wtd: 74 },
-    { date: '2022-03-01', sales: 200, wtd: 73 },
-    { date: '2022-04-01', sales: 278, wtd: 74 },
-    { date: '2022-05-01', sales: 189, wtd: 75 },
-    { date: '2022-06-01', sales: 239, wtd: 73 },
-    { date: '2022-07-01', sales: 349, wtd: 72 },
-    { date: '2022-08-01', sales: 400, wtd: 70 },
-    { date: '2022-09-01', sales: 300, wtd: 68 },
-    { date: '2022-10-01', sales: 200, wtd: 67 },
-    { date: '2022-11-01', sales: 278, wtd: 65 },
-    { date: '2022-12-01', sales: 189, wtd: 64 },
-    { date: '2023-01-01', sales: 400, wtd: 65 },
-    { date: '2023-02-01', sales: 300, wtd: 66 },
-    { date: '2023-03-01', sales: 200, wtd: 63 },
-    { date: '2023-04-01', sales: 278, wtd: 62 },
-    { date: '2023-05-01', sales: 189, wtd: 60 },
-    { date: '2023-06-01', sales: 239, wtd: 62 },
-    { date: '2023-07-01', sales: 349, wtd: 60 },
-    { date: '2023-08-01', sales: 400, wtd: 58 },
-    { date: '2023-09-01', sales: 300, wtd: 56 },
-    { date: '2023-10-01', sales: 200, wtd: 55 },
-    { date: '2023-11-01', sales: 278, wtd: 53 },
-    { date: '2023-12-01', sales: 189, wtd: 55 },
-    { date: '2023-01-01', sales: 239, wtd: 54 },
-    { date: '2024-02-01', sales: 349, wtd: 52 },
-    { date: '2024-03-01', sales: 400, wtd: 55 },
-    { date: '2024-04-01', sales: 300, wtd: 57 },
-    { date: '2024-05-01', sales: 200, wtd: 54 },
-    { date: '2024-06-01', sales: 278, wtd: 51 },
-    { date: '2024-07-01', sales: 189, wtd: 48 },
+    { date: '2022-01-01', sales: 4000, wtd: 2400 },
+    { date: '2022-02-01', sales: 3000, wtd: 1398 },
+    { date: '2022-03-01', sales: 2000, wtd: 9800 },
+    { date: '2022-04-01', sales: 2780, wtd: 3908 },
+    { date: '2022-05-01', sales: 1890, wtd: 4800 },
+    { date: '2022-06-01', sales: 2390, wtd: 3800 },
+    { date: '2022-07-01', sales: 3490, wtd: 4300 },
+    { date: '2022-08-01', sales: 4000, wtd: 2400 },
+    { date: '2022-09-01', sales: 3000, wtd: 1398 },
+    { date: '2022-10-01', sales: 2000, wtd: 7800 },
+    { date: '2022-11-01', sales: 2780, wtd: 3908 },
+    { date: '2022-12-01', sales: 1890, wtd: 4800 },
+    { date: '2023-01-01', sales: 4000, wtd: 2400 },
+    { date: '2023-02-01', sales: 3000, wtd: 1398 },
+    { date: '2023-03-01', sales: 2000, wtd: 3800 },
+    { date: '2023-04-01', sales: 2780, wtd: 3908 },
+    { date: '2023-05-01', sales: 1890, wtd: 4800 },
+    { date: '2023-06-01', sales: 2390, wtd: 3800 },
+    { date: '2023-07-01', sales: 3490, wtd: 4300 },
+    { date: '2023-08-01', sales: 4000, wtd: 2400 },
+    { date: '2023-09-01', sales: 3000, wtd: 1398 },
+    { date: '2023-10-01', sales: 2000, wtd: 8800 },
+    { date: '2023-11-01', sales: 2780, wtd: 3908 },
+    { date: '2023-12-01', sales: 1890, wtd: 4800 },
+    { date: '2023-01-01', sales: 2390, wtd: 3800 },
+    { date: '2024-02-01', sales: 3490, wtd: 4300 },
+    { date: '2024-03-01', sales: 4000, wtd: 2400 },
+    { date: '2024-04-01', sales: 3000, wtd: 1398 },
+    { date: '2024-05-01', sales: 2000, wtd: 4800 },
+    { date: '2024-06-01', sales: 2780, wtd: 3908 },
+    { date: '2024-07-01', sales: 1890, wtd: 4800 }
   ];
 
+  // Update kpiData to include icon and graph data
   const kpiData = [
     { title: 'Sales Units (P6M)', value: '98 lac', change: '+2.3%', trend: 'up', icon: DollarSign, graphData: [2, 3, 4, 3, 5, 4, 6] },
     { title: 'WTD (P6M)', value: '56', change: '-5.2%', trend: 'down', icon: Users, graphData: [6,5,4,3,2,1] },
     { title: 'Sales Value (P6M)', value: '981 lac', change: '2.5%', trend: 'up', icon: ShoppingCart, graphData: [3,4,5,6,7,8,9] },
   ];
 
+  // Sample data for events table
   const eventsData = [
     { event: 'DA | TUP Scheme Increase', month: 'Jun-21', description: 'From 1.36/- to 2.7/-' },
     { event: 'NSA | MLage drop', month: 'Oct-22', description: 'From 34ml to 30ml' },
     { event: 'NSA | TUP Increase', month: 'Feb-23', description: 'From 1.5/- to 1.9/-' },
   ];
 
+  // Sample data for optimizer recommendations
   const optimizerData = [
     { recommendation: 'Maintain minimum threshold for WTD at 62', P6M: '56' },
     { recommendation: 'Maintain maximum threshold for RPI DA 10 at 0.94', P6M: '0.98' },
@@ -85,28 +87,6 @@ const Dashboard: React.FC = () => {
   const geographies = ['All', 'NSA Stronghold', 'DA Stronghold', 'Uncontested'];
   const packRanges = ['All', '0-40 ml', '41-89 ml', '90-299 ml', 'Large Packs'];
 
-  const handleChartClick = () => {
-    setZoomedContent(
-      <div className="p-10 w-full h-full" style={{ width: '1800px', height: '400px' }}>
-        <ResponsiveContainer width="80%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="date" stroke="#6B7280" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })} />
-            <YAxis stroke="#6B7280" />
-            <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
-            <Tooltip />
-            <Line type="monotone" dataKey="sales" stroke="#4F46E5" strokeWidth={2} dot={false} />
-            <Line yAxisId="right" type="monotone" dataKey="wtd" stroke="#10B981" strokeWidth={2} dot={false} strokeDasharray="3 3" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    );
-  };
-
-  const handleCloseZoom = () => {
-    setZoomedContent(null);
-  };
-
   return (
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
       <div className="w-64 bg-indigo-900 text-white">
@@ -115,7 +95,17 @@ const Dashboard: React.FC = () => {
       <div className="flex-1 overflow-auto">
         <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto py-4 px-6 sm:px-8 lg:px-10">
-            <h2 className="text-3xl font-bold mb-6">Executive Summary</h2>
+            <h2 className="text-3xl font-bold mb-6">Data Scientist View</h2>
+            <div className="flex justify-between items-center mb-4">
+              <div className="relative">
+                <input
+                  type="search"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 rounded-full bg-white/50 border border-indigo-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-400" size={18} />
+              </div>
+            </div>
             <div className="flex space-x-4 items-center">
               <Filter size={20} className="text-indigo-600" />
               <div>
@@ -162,6 +152,7 @@ const Dashboard: React.FC = () => {
         </header>
 
         <main className="max-w-7xl mx-auto py-6 px-6 sm:px-8 lg:px-10">
+          {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {kpiData.map((kpi, index) => (
               <Card key={index} className="bg-white overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
@@ -184,24 +175,26 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
 
-          <Card className="mb-8 bg-white rounded-xl shadow-md" onClick={handleChartClick}>
+          {/* Sales and WTD Chart */}
+          <Card className="mb-8 bg-white rounded-xl shadow-md">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-indigo-900 mb-4">Sales and WTD Trends</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="date" stroke="#6B7280" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })} />
+                  <XAxis dataKey="date" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
                   <Tooltip contentStyle={{ background: 'white', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                   <Line type="monotone" dataKey="sales" stroke="#4F46E5" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-                  <Line yAxisId="right" type="monotone" dataKey="wtd" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{ r: 6 }} strokeDasharray="3 3" />
+                  <Line type="monotone" dataKey="wtd" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
+          {/* Events Table and Optimizer Recommendations */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Events Table */}
             <Card className="bg-white rounded-xl shadow-md">
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-indigo-900 mb-4">Recent Events</h2>
@@ -230,6 +223,7 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* Optimizer Recommendations */}
             <Card className="bg-white rounded-xl shadow-md">
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-indigo-900 mb-4">Optimizer Recommendations</h2>
@@ -258,17 +252,8 @@ const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
-      {zoomedContent && (
-        <Modal onClose={handleCloseZoom}>
-          {zoomedContent ? (
-            <div className="w-full h-full p-10">{zoomedContent}</div>
-          ) : (
-            <div>No Content</div> // fallback in case zoomedContent is null
-          )}
-        </Modal>
-      )}
     </div>
   );
 };
 
-export default Dashboard;
+export default DashboardDS;

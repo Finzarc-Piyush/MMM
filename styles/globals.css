@@ -6,19 +6,17 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-    /* ... other custom properties ... */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
- 
     --radius: 0.5rem;
   }
- 
+
   .dark {
     /* ... dark mode custom properties ... */
   }
 }
- 
+
 @layer base {
   * {
     border-color: hsl(var(--border));
@@ -27,4 +25,61 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+.modal-zoom {
+  transform: scale(0.8);
+  opacity: 0;
+  transition: transform 1s ease, opacity 1s ease;
+}
+
+.modal-zoom-in {
+  transform: scale(1);
+  opacity: 1;
+}
+
+
+.file\:border-0::file-selector-button {
+  border-width: 0px;
+}
+
+.file\:bg-transparent::file-selector-button {
+  background-color: transparent;
+}
+
+.zoomed-chart {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.dimmed-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.vertical-align-middle {
+  vertical-align: middle;
+}
+
+table td, table th {
+  vertical-align: middle;
+}
+
+.small-button {
+  font-size: .8rem; /* Decrease font size */
+  padding: 0.5rem 1rem; /* Adjust padding */
+  width: 20rem; /* Adjust width */
 }

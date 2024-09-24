@@ -1,9 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{html,js,jsx,ts,tsx, css}', // Adjust the paths according to your project structure
+    './styles/glbals.css',
+    './pages/**/*.{html,js,jsx,ts,tsx,css}',
+    './components/**/*.{html,js,jsx,ts,tsx,css}',
   ],
   theme: {
     extend: {},
