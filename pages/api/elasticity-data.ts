@@ -5,7 +5,7 @@ import * as path from 'path';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const filePath = path.resolve('./public/Elasticity Data.xlsx');
+    const filePath = path.resolve('./Data/Elasticity Data.xlsx');
     if (!fs.existsSync(filePath)) {
       console.error('File not found:', filePath);
       return res.status(404).json({ error: 'File not found' });

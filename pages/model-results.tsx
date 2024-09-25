@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import { useRouter } from 'next/router';
 import { useFilter } from '../context/FilterContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import Harveyball from '../components/Harveyball';
 
 export default function ModelResults() {
   const router = useRouter();
@@ -123,7 +124,7 @@ export default function ModelResults() {
                       <tr key={rowIndex}>
                         {row.map((cell, cellIndex) => (
                           <td key={cellIndex} className="py-2 px-4 border-b border-gray-200 text-sm">
-                            {cell}
+                            {cellIndex === 2 ? <Harveyball value={cell} /> : cell}
                           </td>
                         ))}
                       </tr>
