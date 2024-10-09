@@ -29,40 +29,32 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedBrand, selectedGeography, selectedPackRange]);
 
-  const chartData = [
-    { date: '2022-01-01', sales: 400, wtd: 75 },
-    { date: '2022-02-01', sales: 300, wtd: 74 },
-    { date: '2022-03-01', sales: 200, wtd: 73 },
-    { date: '2022-04-01', sales: 278, wtd: 74 },
-    { date: '2022-05-01', sales: 189, wtd: 75 },
-    { date: '2022-06-01', sales: 239, wtd: 73 },
-    { date: '2022-07-01', sales: 349, wtd: 72 },
-    { date: '2022-08-01', sales: 400, wtd: 70 },
-    { date: '2022-09-01', sales: 300, wtd: 68 },
-    { date: '2022-10-01', sales: 200, wtd: 67 },
-    { date: '2022-11-01', sales: 278, wtd: 65 },
-    { date: '2022-12-01', sales: 189, wtd: 64 },
-    { date: '2023-01-01', sales: 400, wtd: 65 },
-    { date: '2023-02-01', sales: 300, wtd: 66 },
-    { date: '2023-03-01', sales: 200, wtd: 63 },
-    { date: '2023-04-01', sales: 278, wtd: 62 },
-    { date: '2023-05-01', sales: 189, wtd: 60 },
-    { date: '2023-06-01', sales: 239, wtd: 62 },
-    { date: '2023-07-01', sales: 349, wtd: 60 },
-    { date: '2023-08-01', sales: 400, wtd: 58 },
-    { date: '2023-09-01', sales: 300, wtd: 56 },
-    { date: '2023-10-01', sales: 200, wtd: 55 },
-    { date: '2023-11-01', sales: 278, wtd: 53 },
-    { date: '2023-12-01', sales: 189, wtd: 55 },
-    { date: '2023-01-01', sales: 239, wtd: 54 },
-    { date: '2024-02-01', sales: 349, wtd: 52 },
-    { date: '2024-03-01', sales: 400, wtd: 55 },
-    { date: '2024-04-01', sales: 300, wtd: 57 },
-    { date: '2024-05-01', sales: 200, wtd: 54 },
-    { date: '2024-06-01', sales: 278, wtd: 51 },
-    { date: '2024-07-01', sales: 189, wtd: 48 },
-  ];
+  const [chartData, setChartData] = useState<any[]>([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/overview-data');
+        const data = await response.json();
+        console.log(data.map((item: { date: string }) => item.date)); // Define the type for item
+        setChartData(data);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+  function excelSerialToDate(serial: number) {
+    const excelEpoch = new Date(1900, 0, 1); // Excel starts counting from Jan 1, 1900
+    const daysOffset = serial - 1; // Excel's day 1 is actually Jan 1, 1900
+    const date = new Date(excelEpoch.getTime() + daysOffset * 24 * 60 * 60 * 1000); // Add the number of days
+    return date;
+  }
+
+  
   const kpiData = [
     { title: 'Sales Units (P6M)', value: '98 lac', change: '+2.3%', trend: 'up', icon: DollarSign, graphData: [2, 3, 4, 3, 5, 4, 6] },
     { title: 'WTD (P6M)', value: '56', change: '-5.2%', trend: 'down', icon: Users, graphData: [6,5,4,3,2,1] },
@@ -87,13 +79,26 @@ const Dashboard: React.FC = () => {
 
   const handleChartClick = () => {
     setZoomedContent(
-      <div className="p-10 w-full h-full" style={{ width: '1800px', height: '400px' }}>
+      <div className="p-10 w-full h-full" style={{ width: '1800px', height: '500px' }}>
         <ResponsiveContainer width="80%" height="100%">
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="date" stroke="#6B7280" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })} />
-            <YAxis stroke="#6B7280" />
-            <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
+            <XAxis
+              dataKey="date"
+              stroke="#6B7280"
+              tickFormatter={(date) => {
+              if (typeof date === 'number') {
+                const parsedDate = excelSerialToDate(date);
+                  return parsedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                }
+                return "x";
+              }}
+              ticks={chartData
+                .map((entry, index) => (index % 3 === 0 ? entry.date : null))
+                .filter((date) => date !== null)}
+            />
+            <YAxis stroke="#4F46E5" domain={['auto', 'auto']} />
+            <YAxis yAxisId="right" orientation="right" stroke="#10B981" domain={['auto', 'auto']} />
             <Tooltip />
             <Line type="monotone" dataKey="sales" stroke="#4F46E5" strokeWidth={2} dot={false} />
             <Line yAxisId="right" type="monotone" dataKey="wtd" stroke="#10B981" strokeWidth={2} dot={false} strokeDasharray="3 3" />
@@ -190,9 +195,22 @@ const Dashboard: React.FC = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="date" stroke="#6B7280" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })} />
-                  <YAxis stroke="#6B7280" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#6B7280"
+                    tickFormatter={(date) => {
+                      if (typeof date === 'number') {
+                        const parsedDate = excelSerialToDate(date);
+                        return parsedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                      }
+                      return "x";
+                    }}
+                    ticks={chartData
+                      .map((entry, index) => (index % 3 === 0 ? entry.date : null))
+                      .filter((date) => date !== null)}
+                  />
+                  <YAxis stroke="#6B7280" domain={['auto', 'auto']} />
+                  <YAxis yAxisId="right" orientation="right" stroke="#10B981" domain={['auto', 'auto']} />
                   <Tooltip contentStyle={{ background: 'white', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                   <Line type="monotone" dataKey="sales" stroke="#4F46E5" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                   <Line yAxisId="right" type="monotone" dataKey="wtd" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{ r: 6 }} strokeDasharray="3 3" />

@@ -182,7 +182,12 @@ const DashboardDS: React.FC = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="date" stroke="#6B7280" />
+                  <XAxis dataKey="date" stroke="#6B7280" tickFormatter={(date) => {
+                    const parsedDate = new Date(date);
+                    return !isNaN(parsedDate.getTime())
+                      ? parsedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                      : date; // Fallback to original value if parsing fails
+                  }} />
                   <YAxis stroke="#6B7280" />
                   <Tooltip contentStyle={{ background: 'white', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                   <Line type="monotone" dataKey="sales" stroke="#4F46E5" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
